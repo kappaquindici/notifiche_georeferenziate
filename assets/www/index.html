@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width" />
+<link rel="stylesheet" href="css/foundation.css" />
+<script src="js/vendor/custom.modernizr.js"></script>
+<style type="text/css">
+body {
+	height: 100%;
+	width: 100%;
+}
+
+html {
+	height: 100%;
+	width: 100%;
+}
+
+.app {
+	display: inline;
+}
+
+#map-canvas {
+	height: 80%;
+	width: 100%;
+}
+</style>
+<script type="text/javascript"
+	src="https://maps.googleapis.com/maps/api/js?sensor=false&key=AIzaSyDPJu0_3nAchYRpsEPfyn2TMA005kymj0I"></script>
+<script type="text/javascript">
+	var map;
+	var checkPosition = false;
+	var positionLongitude = 0;
+	var positionLatitude = 0;
+
+	function initialize() {
+
+		var mapOptions = {
+			center : new google.maps.LatLng(-34.397, 150.644),
+			zoom : 8,
+			mapTypeId : google.maps.MapTypeId.ROADMAP
+		};
+		map = new google.maps.Map(document.getElementById("map-canvas"),
+				mapOptions);
+		// 		setMarker(map, latMarker, lonMarker, 'Ciao!');
+		setGeoNotifics(map, positionLatitude, positionLongitude);
+	}
+	google.maps.event.addDomListener(window, 'load', initialize);
+
+	function setMarker(map, latMarker, lonMarker, title) {
+
+		var marker = new google.maps.Marker({
+			position : new google.maps.LatLng(latMarker, lonMarker),
+			map : map,
+			title : title
+		});
+	}
+	var latMarker = -34.397;
+	var lonMarker = 150.644;
+</script>
+
+
+<title>Notifica georeferenziata</title>
+</head>
+<body>
+	<div class="app">
+		<div class="row">
+			<div class="large-12 columns">
+				<hr />
+				<div id="Title">Lorem ipsum dolor sit amet, consectetur
+					adipisicing elit, sed do eiusmod tempor incididunt ut labore et
+					dolore magna aliqua.</div>
+				<hr />
+			</div>
+		</div>
+
+		<div id="map-canvas" />
+
+		<div class="row">
+			<div class="large-12 columns">
+				<div id="myDiv"></div>
+			</div>
+		</div>
+
+
+	</div>
+
+
+
+	<script type="text/javascript" src="cordova-2.7.0.js"></script>
+
+	<script type="text/javascript">
+		//app.initialize();
+
+		document.addEventListener("deviceready", onDeviceReady, false);
+		function onDeviceReady() {
+			console.log("onDeviceReady");
+
+			function onSuccess(position) {
+				alert('onSuccess!');
+				console.log(position);
+				console.log('geolocation.getCurrentPosition - onSucces'
+						+ 'Latitude: ' + position.coords.latitude + '<br/>'
+						+ 'Longitude: ' + position.coords.longitude + '<br/>'
+						+ 'Altitude: ' + position.coords.altitude + '<br/>'
+						+ 'Accuracy: ' + position.coords.accuracy + '<br/>'
+						+ 'Altitude Accuracy: '
+						+ position.coords.altitudeAccuracy + '<br/>'
+						+ 'Heading: ' + position.coords.heading + '<br/>'
+						+ 'Speed: ' + position.coords.speed + '<br/>');
+
+				//	 			          'Latitude: ' + position.coords.latitude + '<br/>'
+				//	 					+ 'Longitude: ' + position.coords.longitude + '<br/>'
+				//	 					+ 'Altitude: ' + position.coords.altitude + '<br/>'
+				//	 					+ 'Accuracy: ' + position.coords.accuracy + '<br/>'
+				//	 					+ 'Altitude Accuracy: ' + position.coords.altitudeAccuracy
+				//	 					+ '<br/>' + 'Heading: ' + position.coords.heading + '<br/>'
+				//	 					+ 'Speed: ' + position.coords.speed + '<br/>';
+
+				positionLatitude = position.coords.latitude;
+				positionLongitude = position.coords.longitude;
+
+				checkPosition = true;
+
+				setGeoNotifics(map, position.coords.latitude,
+						position.coords.longitude);
+			}
+
+			// Show an alert if there is a problem getting the geolocation
+			//
+			function onError(error) {
+				console.log("geolocation.getCurrentPosition - onError	"
+						+ error.code);
+				alert('onError!' + error.message);
+				// 				cordova.exec(successPosition, failPosition, <service>, <action>, [<args>]);
+			}
+			navigator.geolocation.getCurrentPosition(onSuccess, onError, { enableHighAccuracy: true });
+// 			var geo = cordova.require('cordova/plugin/geolocation');
+// 			geo.getCurrentPosition(onSuccess, onError);
+		}
+	</script>
+
+	<script type="text/javascript" src="js/jquery-2.0.1.min.js"></script>
+	<!-- <script type="text/javascript" src="js/jquery.mobile-1.3.1.min.js"></script> -->
+
+	<script type="text/javascript">
+		// 	var urlbase = "http://192.168.134.137:1337";
+		var urlbase = "http://192.168.1.112:1337";
+
+		function setGeoNotifics(map, latitude, longitude) {
+			if (map instanceof google.maps.Map && checkPosition) {
+				map.map.setCenter(new google.maps.LatLng(latitude, longitude));
+
+				$.ajax(
+						{
+							url : urlbase + "/getallnotifics?lat=" + latitude
+									+ "lon=" + longitude,
+						}).done(
+						function(result) {
+							console.log(result);
+
+							var jsonResult = JSON.stringify(result);
+							for (i in jsonResult) {
+								setMarker(map, jsonResult[i].Latitude,
+										jsonResult[i].Longitude,
+										jsonResult[i].Title);
+							}
+
+						});
+			}
+		}
+	</script>
+</body>
+</html>
