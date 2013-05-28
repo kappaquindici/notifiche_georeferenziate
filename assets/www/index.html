@@ -106,6 +106,7 @@ html {
 
 
 	<script type="text/javascript" src="cordova-2.7.0.js"></script>
+	
 
 	<script type="text/javascript">
 		//app.initialize();
@@ -114,6 +115,8 @@ html {
 		function onDeviceReady() {
 			console.log("onDeviceReady");
 
+			var networkConnection = navigator.network.connection.type;
+			alert(networkConnection);
 			function onSuccess(position) {
 				alert('onSuccess!');
 				console.log(position);
